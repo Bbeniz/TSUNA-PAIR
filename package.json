@@ -1,0 +1,14 @@
+{
+  "name": "TSUNA-PAIR",
+  "version": "1.0.0",
+  "description": "Bot WhatsApp Tsuna-Pair avec système de pairing code",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0",
+    "pino": "^8.17.2",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
