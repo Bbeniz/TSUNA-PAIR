@@ -1,31 +1,44 @@
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, delay } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-const readline = require('readline');
+const fs = require('fs');
 
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+// NUMERO DU BOT - NE PAS TOUCHER
+const NUMERO = '243960262558' 
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info');
     
     const sock = makeWASocket({
         logger: pino({ level: 'silent' }),
-        auth: state
+        auth: state,
+        browser: ['Tsuna-Bot', 'Chrome', '1.0.0']
     });
 
     sock.ev.on('creds.update', saveCreds);
     
+    // Génère le code de couplage si pas encore connecté
     if (!sock.authState.creds.registered) {
-        await delay(2000);
-        const phoneNumber = await question('Entre ton numero WhatsApp avec indicatif : ');
-        const code = await sock.requestPairingCode(phoneNumber);
-        console.log(`Ton code de couplage : ${code}`);
+        await delay(3000);
+        try {
+            const code = await sock.requestPairingCode(NUMERO);
+            console.log(`\n==================================`);
+            console.log(`  TON CODE DE COUPLAGE : ${code}`);
+            console.log(`  Va sur WhatsApp du 243960262558`);
+            console.log(`  Paramètres > Appareils liés > Lier avec le code`);
+            console.log(`==================================\n`);
+        } catch (err) {
+            console.log("Erreur code de couplage:", err);
+        }
     }
     
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update;
+        if (connection === 'open') {
+            console.log('Bot connecté avec succès ✅');
+        }
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('Connexion fermée. Reconnexion...', shouldReconnect);
             if (shouldReconnect) startBot();
         }
     });
